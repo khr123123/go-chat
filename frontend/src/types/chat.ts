@@ -1,13 +1,10 @@
 export type Uuid = string;
-
 export type ConversationType = "direct" | "group";
 
 export interface Profile {
     id: Uuid;
-    display_name: string | null;
     avatar_url: string | null;
     bio: string | null;
-    last_seen_at?: string | null;
 }
 
 export interface Conversation {
@@ -21,17 +18,18 @@ export interface Conversation {
     created_by: Uuid;
 }
 
-export interface ConversationMember {
+export interface MemberRow {
     conversation_id: Uuid;
     user_id: Uuid;
     role: "owner" | "admin" | "member";
-    joined_at: string;
     last_read_message_id: Uuid | null;
     last_read_at: string | null;
-    profile?: Profile;
+    profile: Profile | null;
 }
 
-export interface MessageAttachment {
+export type MessageKind = "text" | "image" | "file" | "system";
+
+export interface AttachmentRow {
     id: Uuid;
     message_id: Uuid;
     storage_path: string;
@@ -40,8 +38,6 @@ export interface MessageAttachment {
     width: number | null;
     height: number | null;
 }
-
-export type MessageKind = "text" | "image" | "file" | "system";
 
 export interface ChatMessage {
     id: Uuid;
@@ -53,11 +49,19 @@ export interface ChatMessage {
     is_edited: boolean;
     is_deleted: boolean;
     created_at: string;
-    attachments?: MessageAttachment[];
-    sender?: Profile | null;
+    attachments: AttachmentRow[];
 }
 
 export interface ConversationWithMeta extends Conversation {
-    members: ConversationMember[];
+    members: MemberRow[];
     unread_count: number;
+}
+
+export interface PendingAttachment {
+    localId: string;
+    file: File;
+    previewUrl: string;
+    status: "uploading" | "done" | "error";
+    progress: number;
+    storagePath?: string;
 }
