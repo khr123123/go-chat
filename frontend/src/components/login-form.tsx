@@ -1,13 +1,12 @@
 import {useState} from "react"
 import {useNavigate} from "react-router-dom"
 import {toast} from "sonner"
-
 import {cn} from "@/lib/utils"
 import {supabase} from "@/lib/supabaseClient"
-
 import {Button} from "@/components/ui/button"
 import {Field, FieldDescription, FieldGroup, FieldLabel, FieldSeparator} from "@/components/ui/field"
 import {Input} from "@/components/ui/input"
+import {useUserStore} from "@/store/userStore"
 
 export function LoginForm({className, ...props}: React.ComponentProps<"form">) {
     const navigate = useNavigate()
@@ -17,7 +16,7 @@ export function LoginForm({className, ...props}: React.ComponentProps<"form">) {
     const [nickname, setNickname] = useState("")
     const [confirmPassword, setConfirmPassword] = useState("")
     const [loading, setLoading] = useState(false)
-
+    const setUser = useUserStore((state) => state.setUser)
     const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault()
         if (!email.trim() || !password.trim()) {
@@ -26,11 +25,34 @@ export function LoginForm({className, ...props}: React.ComponentProps<"form">) {
         }
         setLoading(true)
         try {
-            const {error} = await supabase.auth.signInWithPassword({email: email.trim(), password})
+            const {data, error} = await supabase.auth.signInWithPassword({email: email.trim(), password})
             if (error) {
                 toast.error("登录失败", {description: error.message})
                 return
             }
+            const authUser = data.user
+            if (!authUser) {
+                return
+            }
+            const {data: profile} = await supabase
+                .from("profiles")
+                .select("*")
+                .eq("id", authUser.id)
+                .maybeSingle()
+
+            setUser({
+                id: authUser.id,
+                email: authUser.email,
+                phone: authUser.phone,
+                created_at: authUser.created_at,
+                updated_at: authUser.updated_at,
+                last_sign_in_at: authUser.last_sign_in_at,
+                email_confirmed_at: authUser.email_confirmed_at,
+                displayname: authUser.user_metadata.display_name,
+                avatar_url: profile?.avatar_url,
+                bio: profile?.bio,
+            })
+            console.log(authUser)
             toast.success("登录成功", {description: "欢迎回来！"})
             setTimeout(() => navigate("/"), 500)
         } catch {

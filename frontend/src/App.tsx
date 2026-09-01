@@ -1,45 +1,33 @@
 import {HashRouter, Navigate, Route, Routes} from "react-router-dom"
 
-import Login from "@/pages/Login"
-import Home from "@/pages/Home"
-import ProtectedRoute from "@/components/protected-route"
+import AppLayout from "@/layouts/AppLayout"
 
-function App() {
+import Home from "@/pages/Home"
+import Chat from "@/pages/Chat"
+import Settings from "@/pages/Settings"
+import Login from "@/pages/Login"
+
+export default function App() {
     return (
         <HashRouter>
             <Routes>
-                {/* 默认页面 */}
-                <Route
-                    path="/"
-                    element={<Navigate to="/home" replace/>}
-                />
-
-                {/* 登录页面 */}
-                <Route
-                    path="/login"
-                    element={<Login/>}
-                />
-
-                {/* 需要登录的页面 */}
-                <Route element={<ProtectedRoute/>}>
+                <Route path="/login" element={<Login/>}/>
+                <Route element={<AppLayout/>}>
                     <Route
-                        path="/home"
+                        path="/"
                         element={<Home/>}
                     />
-
-                    {/* 后面继续加 */}
-                    {/* <Route path="/chat" element={<Chat />} /> */}
-                    {/* <Route path="/profile" element={<Profile />} /> */}
-
+                    <Route
+                        path="/chat"
+                        element={<Chat/>}
+                    />
+                    <Route
+                        path="/settings"
+                        element={<Settings/>}
+                    />
                 </Route>
-                <Route
-                    path="*"
-                    element={<Navigate to="/home" replace/>}
-                />
-
+                <Route path="*" element={<Navigate to="/" replace/>}/>
             </Routes>
         </HashRouter>
     )
 }
-
-export default App

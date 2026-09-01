@@ -1,8 +1,8 @@
 import {useRef, useState} from "react"
+import {Camera} from "lucide-react"
 import {supabase} from "@/lib/supabaseClient"
 import {toast} from "sonner"
-import {Button} from "@/components/ui/button"
-import {Avatar, AvatarFallback, AvatarImage,} from "@/components/ui/avatar"
+import {Avatar, AvatarFallback, AvatarImage} from "@/components/ui/avatar"
 
 type Props = {
     userId: string
@@ -10,175 +10,66 @@ type Props = {
     onUploaded?: (url: string) => void
 }
 
-export default function AvatarUpload({
-                                         userId,
-                                         avatarUrl,
-                                         onUploaded,
-                                     }: Props) {
-
+export default function AvatarUpload({userId, avatarUrl, onUploaded}: Props) {
     const inputRef = useRef<HTMLInputElement>(null)
     const [loading, setLoading] = useState(false)
 
-    const handleUpload = async (
-        e: React.ChangeEvent<HTMLInputElement>
-    ) => {
-
+    const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0]
+        if (!file) return
 
-        if (!file) {
-            return
-        }
-
-        // 检查图片
         if (!file.type.startsWith("image/")) {
-            toast.error("上传失败", {
-                description: "请选择图片文件",
-            })
+            toast.error("Upload failed", {description: "Please select an image file"})
             return
         }
 
-        // 限制 5MB
         if (file.size > 5 * 1024 * 1024) {
-            toast.error("上传失败", {
-                description: "头像不能超过 5MB",
-            })
+            toast.error("Upload failed", {description: "Avatar must be smaller than 5MB"})
             return
         }
 
         setLoading(true)
 
         try {
+            const filePath = `${userId}/${crypto.randomUUID()}.${file.name.split(".").pop() || "png"}`
 
-            // 确认当前登录用户
-            const {
-                data: {user},
-                error: userError,
-            } = await supabase.auth.getUser()
+            const {error} = await supabase.storage.from("avatars").upload(filePath, file)
 
-            if (userError || !user) {
-                throw new Error("未登录")
-            }
+            if (error) throw error
 
-            // 防止别人修改其他用户头像
-            if (user.id !== userId) {
-                throw new Error("无权修改该用户头像")
-            }
+            const {data} = supabase.storage.from("avatars").getPublicUrl(filePath)
+            const url = `${data.publicUrl}?t=${Date.now()}`
 
-            // 获取扩展名
-            const extension =
-                file.name.split(".").pop()?.toLowerCase() || "jpg"
-
-            // 唯一路径
-            const filePath =
-                `${user.id}/${crypto.randomUUID()}.${extension}`
-
-            console.log("上传路径:", filePath)
-
-// 上传
-            const {
-                error: uploadError,
-            } = await supabase.storage
-                .from("avatars")
-                .upload(filePath, file, {
-                    cacheControl: "3600",
-                    upsert: false,
-                    contentType: file.type,
-                })
-
-            if (uploadError) {
-                throw uploadError
-            }
-
-// 获取 Public URL
-            const {
-                data: {publicUrl},
-            } = supabase.storage
-                .from("avatars")
-                .getPublicUrl(filePath)
-
-// 防止浏览器缓存
-            const newAvatarUrl =
-                `${publicUrl}?t=${Date.now()}`
-
-            console.log("头像 URL:", newAvatarUrl)
-
-// 更新 profiles
-            const {
-                error: updateError,
-            } = await supabase
-                .from("profiles")
-                .update({
-                    avatar_url: newAvatarUrl,
-                    updated_at: new Date().toISOString(),
-                })
-                .eq("id", user.id)
-
-            if (updateError) {
-                throw updateError
-            }
-
-            toast.success("头像更新成功")
-
-            onUploaded?.(newAvatarUrl)
-
+            onUploaded?.(url)
+            toast.success("Avatar updated")
         } catch (error) {
-
-            console.error("头像上传失败:", error)
-
-            toast.error("头像上传失败", {
-                description:
-                    error instanceof Error
-                        ? error.message
-                        : "请稍后再试",
+            console.error(error)
+            toast.error("Avatar upload failed", {
+                description: error instanceof Error ? error.message : "Please try again later",
             })
-
         } finally {
-
             setLoading(false)
-
-            if (inputRef.current) {
-                inputRef.current.value = ""
-            }
+            if (inputRef.current) inputRef.current.value = ""
         }
     }
 
     return (
-        <div className="flex flex-col items-center gap-4">
-
-            <Avatar className="size-24">
-
-                <AvatarImage
-                    src={avatarUrl || undefined}
-                    alt="用户头像"
-                />
-
-                <AvatarFallback>
-                    U
-                </AvatarFallback>
-
+        <div className="relative group cursor-pointer" onClick={() => !loading && inputRef.current?.click()}>
+            <Avatar className="size-28">
+                <AvatarImage src={avatarUrl || undefined} alt="Avatar" className="object-cover"/>
+                <AvatarFallback className="text-2xl">{userId.slice(0, 2).toUpperCase()}</AvatarFallback>
             </Avatar>
 
-            <input
-                ref={inputRef}
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={handleUpload}
-            />
+            <div
+                className="absolute inset-0 flex items-center justify-center rounded-full bg-black/50 opacity-0 transition-opacity group-hover:opacity-100">
+                {loading ? (
+                    <div className="size-6 animate-spin rounded-full border-2 border-white border-t-transparent"/>
+                ) : (
+                    <Camera className="size-7 text-white"/>
+                )}
+            </div>
 
-            <Button
-                type="button"
-                variant="outline"
-                disabled={loading}
-                onClick={() =>
-                    inputRef.current?.click()
-                }
-            >
-                {loading
-                    ? "上传中..."
-                    : "更换头像"}
-            </Button>
-
+            <input ref={inputRef} type="file" accept="image/*" className="hidden" onChange={handleUpload}/>
         </div>
     )
 }
