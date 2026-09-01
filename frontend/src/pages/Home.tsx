@@ -1,15 +1,10 @@
-import { useEffect, useState } from "react"
-import { useNavigate } from "react-router-dom"
-import { toast } from "sonner"
+import {useEffect, useState} from "react"
+import {useNavigate} from "react-router-dom"
+import {toast} from "sonner"
 
-import { supabase } from "@/lib/supabaseClient"
-import { Button } from "@/components/ui/button"
-import {
-    Card,
-    CardContent,
-    CardHeader,
-    CardTitle,
-} from "@/components/ui/card"
+import {supabase} from "@/lib/supabaseClient"
+import {Button} from "@/components/ui/button"
+import {Card, CardContent, CardHeader, CardTitle,} from "@/components/ui/card"
 
 type UserInfo = {
     id: string
@@ -30,12 +25,12 @@ export default function Home() {
     const getUser = async () => {
         try {
             const {
-                data: { user },
+                data: {user},
                 error,
             } = await supabase.auth.getUser()
 
             if (error || !user) {
-                navigate("/login", { replace: true })
+                navigate("/login", {replace: true})
                 return
             }
 
@@ -51,14 +46,14 @@ export default function Home() {
                 description: "请重新登录",
             })
 
-            navigate("/login", { replace: true })
+            navigate("/login", {replace: true})
         } finally {
             setLoading(false)
         }
     }
 
     const handleLogout = async () => {
-        const { error } = await supabase.auth.signOut()
+        const {error} = await supabase.auth.signOut()
 
         if (error) {
             toast.error("退出失败", {
@@ -71,7 +66,7 @@ export default function Home() {
             description: "期待下次再见！",
         })
 
-        navigate("/login", { replace: true })
+        navigate("/login", {replace: true})
     }
 
     if (loading) {
