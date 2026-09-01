@@ -1,14 +1,11 @@
 import * as React from "react"
 import {
-    IconCamera,
-    IconDashboard,
     IconDatabase,
-    IconFileAi,
-    IconFileDescription,
     IconFileWord,
     IconHelp,
+    IconHome2,
     IconInnerShadowTop,
-    IconListDetails,
+    IconMessageCircle,
     IconReport,
     IconSearch,
     IconSettings,
@@ -30,69 +27,16 @@ import {
 import {useUserStore} from "@/store/userStore";
 
 const data = {
-    user: {
-        name: "shadcn",
-        email: "m@example.com",
-        avatar: "/avatars/shadcn.jpg",
-    },
     navMain: [
         {
             title: "Home",
             url: "/",
-            icon: IconDashboard,
+            icon: IconHome2,
         },
         {
             title: "Chat",
             url: "/chat",
-            icon: IconListDetails,
-        },
-    ],
-    navClouds: [
-        {
-            title: "Capture",
-            icon: IconCamera,
-            isActive: true,
-            url: "#",
-            items: [
-                {
-                    title: "Active Proposals",
-                    url: "#",
-                },
-                {
-                    title: "Archived",
-                    url: "#",
-                },
-            ],
-        },
-        {
-            title: "Proposal",
-            icon: IconFileDescription,
-            url: "#",
-            items: [
-                {
-                    title: "Active Proposals",
-                    url: "#",
-                },
-                {
-                    title: "Archived",
-                    url: "#",
-                },
-            ],
-        },
-        {
-            title: "Prompts",
-            icon: IconFileAi,
-            url: "#",
-            items: [
-                {
-                    title: "Active Proposals",
-                    url: "#",
-                },
-                {
-                    title: "Archived",
-                    url: "#",
-                },
-            ],
+            icon: IconMessageCircle,
         },
     ],
     navSecondary: [
@@ -105,11 +49,6 @@ const data = {
             title: "Get Help",
             url: "#",
             icon: IconHelp,
-        },
-        {
-            title: "Search",
-            url: "#",
-            icon: IconSearch,
         },
     ],
     documents: [
@@ -132,9 +71,7 @@ const data = {
 }
 
 export function AppSidebar({...props}: React.ComponentProps<typeof Sidebar>) {
-
     const user = useUserStore((state) => state.user)
-
     return (
         <Sidebar collapsible="offcanvas" {...props}>
             <SidebarHeader>

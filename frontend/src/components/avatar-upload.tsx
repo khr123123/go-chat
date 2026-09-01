@@ -57,7 +57,7 @@ export default function AvatarUpload({userId, avatarUrl, onUploaded}: Props) {
         <div className="relative group cursor-pointer" onClick={() => !loading && inputRef.current?.click()}>
             <Avatar className="size-28">
                 <AvatarImage src={avatarUrl || undefined} alt="Avatar" className="object-cover"/>
-                <AvatarFallback className="text-2xl">{userId.slice(0, 2).toUpperCase()}</AvatarFallback>
+                <AvatarFallback className="text-2xl">{userId.slice(0, 4).toUpperCase()}</AvatarFallback>
             </Avatar>
 
             <div

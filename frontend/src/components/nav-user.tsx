@@ -61,22 +61,11 @@ export function NavUser({
                                     src={user.avatar_url || undefined}
                                     alt={user.displayname}
                                 />
-
                                 <AvatarFallback className="rounded-lg">
                                     {user.displayname?.charAt(0)?.toUpperCase() || "U"}
                                 </AvatarFallback>
                             </Avatar>
-
-                            <div className="grid flex-1 text-left text-sm leading-tight">
-                <span className="truncate font-medium">
-                  {user.displayname || "User"}
-                </span>
-
-                                <span className="truncate text-xs text-muted-foreground">
-                  {user.email}
-                </span>
-                            </div>
-
+                            <span className="truncate font-medium">{user.displayname || "User"}</span>
                             <IconDotsVertical className="ml-auto size-4"/>
                         </SidebarMenuButton>
                     </DropdownMenuTrigger>

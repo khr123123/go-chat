@@ -1,6 +1,4 @@
 import { AppSidebar } from "@/components/app-sidebar"
-import { ChartAreaInteractive } from "@/components/chart-area-interactive"
-import { SectionCards } from "@/components/section-cards"
 import { SiteHeader } from "@/components/site-header"
 import {
     SidebarInset,
@@ -14,12 +12,12 @@ export default function Page() {
         <SidebarProvider
             style={
                 {
-                    "--sidebar-width": "calc(var(--spacing) * 72)",
+                    "--sidebar-width": "200px",
                     "--header-height": "calc(var(--spacing) * 12)",
                 } as React.CSSProperties
             }
         >
-            <AppSidebar variant="inset" />
+            <AppSidebar variant="inset"/>
             <SidebarInset>
                 <SiteHeader />
                 <div className="flex flex-1 flex-col">
