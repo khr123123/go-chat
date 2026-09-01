@@ -1,7 +1,6 @@
-```tsx
-import { Navigate, Outlet } from "react-router-dom"
-import { useEffect, useState } from "react"
-import { supabase } from "@/lib/supabaseClient"
+import {Navigate, Outlet} from "react-router-dom"
+import {useEffect, useState} from "react"
+import {supabase} from "@/lib/supabaseClient"
 
 export default function ProtectedRoute() {
     const [loading, setLoading] = useState(true)
@@ -11,7 +10,7 @@ export default function ProtectedRoute() {
         checkAuth()
 
         const {
-            data: { subscription },
+            data: {subscription},
         } = supabase.auth.onAuthStateChange(
             (_event, session) => {
                 setAuthenticated(!!session)
@@ -26,7 +25,7 @@ export default function ProtectedRoute() {
 
     const checkAuth = async () => {
         const {
-            data: { session },
+            data: {session},
         } = await supabase.auth.getSession()
 
         setAuthenticated(!!session)
@@ -44,9 +43,8 @@ export default function ProtectedRoute() {
     }
 
     if (!authenticated) {
-        return <Navigate to="/login" replace />
+        return <Navigate to="/login" replace/>
     }
 
-    return <Outlet />
+    return <Outlet/>
 }
-```
