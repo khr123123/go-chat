@@ -14,6 +14,7 @@ export function LoginForm({className, ...props}: React.ComponentProps<"form">) {
     const [isRegister, setIsRegister] = useState(false)
     const [email, setEmail] = useState("")
     const [password, setPassword] = useState("")
+    const [nickname, setNickname] = useState("")
     const [confirmPassword, setConfirmPassword] = useState("")
     const [loading, setLoading] = useState(false)
 
@@ -55,7 +56,15 @@ export function LoginForm({className, ...props}: React.ComponentProps<"form">) {
         }
         setLoading(true)
         try {
-            const {error} = await supabase.auth.signUp({email: email.trim(), password})
+            const {error} = await supabase.auth.signUp({
+                email: email.trim(),
+                password,
+                options: {
+                    data: {
+                        display_name: nickname.trim(),
+                    },
+                },
+            })
             if (error) {
                 toast.error("注册失败", {description: error.message})
                 return
@@ -86,7 +95,23 @@ export function LoginForm({className, ...props}: React.ComponentProps<"form">) {
                     <h1 className="text-2xl font-bold">{isRegister ? "Create an account" : "Login to your account"}</h1>
                     <p className="text-sm text-balance text-muted-foreground">{isRegister ? "Enter your information to create your account" : "Enter your email below to login to your account"}</p>
                 </div>
+                {isRegister && (
+                    <Field>
+                        <FieldLabel htmlFor="nickname">
+                            Nickname
+                        </FieldLabel>
 
+                        <Input
+                            id="nickname"
+                            placeholder="请输入昵称"
+                            value={nickname}
+                            onChange={(e) => setNickname(e.target.value)}
+                            disabled={loading}
+                            autoComplete="nickname"
+                            required
+                        />
+                    </Field>
+                )}
                 <Field>
                     <FieldLabel htmlFor="email">Email</FieldLabel>
                     <Input id="email" type="email" placeholder="m@example.com" value={email}
