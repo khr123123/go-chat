@@ -1,16 +1,19 @@
 "use client";
-import { useEffect, useMemo, useRef } from "react";
+import {useEffect, useMemo, useRef} from "react";
 import {
-    MessageScrollerProvider,
     MessageScroller,
-    MessageScrollerViewport,
+    MessageScrollerButton,
     MessageScrollerContent,
     MessageScrollerItem,
-    MessageScrollerButton,
+    MessageScrollerProvider,
+    MessageScrollerViewport,
 } from "@/components/ui/message-scroller";
-import { MessageRow } from "./message-row";
-import type { ChatMessage } from "@/types/chat";
-import { useChatStore } from "@/store/chatStore";
+import {MessageRow} from "./message-row";
+import type {ChatMessage} from "@/types/chat";
+import {useChatStore} from "@/store/chatStore";
+// import supabase inside this file lazily to avoid a circular import edge-case
+import {supabase} from "@/lib/supabaseClient";
+import {useUserStore} from "@/store/userStore";
 
 interface MetaMap {
     [uid: string]: { name: string; avatar: string | null };
@@ -44,7 +47,7 @@ export function ChatStream({
     useEffect(() => {
         let cancelled = false;
         (async () => {
-            const { data, error } = await supabase
+            const {data, error} = await supabase
                 .from("messages")
                 .select(`
         *,
@@ -56,7 +59,7 @@ export function ChatStream({
         )
     `)
                 .eq("conversation_id", convId)
-                .order("created_at", { ascending: true })
+                .order("created_at", {ascending: true})
                 .limit(200);
             if (!cancelled) {
                 if (!error && data) {
@@ -83,7 +86,7 @@ export function ChatStream({
     useEffect(() => {
         const channel = supabase
             .channel(`conv:${convId}`, {
-                config: { broadcast: { self: false }, presence: { key: convId } },
+                config: {broadcast: {self: false}, presence: {key: convId}},
             })
             .on(
                 "postgres_changes",
@@ -95,7 +98,7 @@ export function ChatStream({
                 },
                 async (payload) => {
                     const inserted = payload.new as ChatMessage;
-                    const { data: att } = await supabase
+                    const {data: att} = await supabase
                         .from("message_attachments")
                         .select("*")
                         .eq("message_id", inserted.id);
@@ -122,7 +125,7 @@ export function ChatStream({
                     });
                 }
             )
-            .on("broadcast", { event: "typing" }, (payload) => {
+            .on("broadcast", {event: "typing"}, (payload) => {
                 const from = (payload as any).payload?.from as string;
                 if (!from) return;
                 setTyping(convId, Array.from(new Set([...typing, from])).slice(-5));
@@ -147,7 +150,8 @@ export function ChatStream({
             })
             .eq("conversation_id", convId)
             .eq("user_id", CURRENT_USER_ID)
-            .then(() => {});
+            .then(() => {
+            });
     }, [convId, messages.length]);
 
     const groups = useMemo(() => groupByTurn(messages), [messages]);
@@ -161,7 +165,7 @@ export function ChatStream({
             <MessageScroller className="relative h-full">
                 <MessageScrollerViewport className="flex-1 bg-gradient-to-b from-background to-muted/20">
                     <MessageScrollerContent className="mx-auto flex w-full max-w-3xl flex-col gap-3 px-6 py-6">
-                        {groups.map(({ turnId, items }) => {
+                        {groups.map(({turnId, items}) => {
                             const first = items[0];
                             const isMeTurn = first.sender_id === CURRENT_USER_ID;
                             const align: "start" | "end" = isMeTurn ? "end" : "start";
@@ -197,7 +201,11 @@ export function ChatStream({
                         })}
                     </MessageScrollerContent>
                 </MessageScrollerViewport>
-                <MessageScrollerButton />
+                <div className="pointer-events-none absolute bottom-4 left-6 z-50 ">
+                    <div className="pointer-events-auto ">
+                        <MessageScrollerButton/>
+                    </div>
+                </div>
             </MessageScroller>
         </MessageScrollerProvider>
     );
@@ -211,7 +219,7 @@ function groupByTurn(msgs: ChatMessage[]) {
     let cur: { turnId: string; items: ChatMessage[] } | null = null;
     for (const m of msgs) {
         if (m.kind === "system") {
-            groups.push({ turnId: m.id, items: [m] });
+            groups.push({turnId: m.id, items: [m]});
             cur = null;
             continue;
         }
@@ -224,13 +232,10 @@ function groupByTurn(msgs: ChatMessage[]) {
         ) {
             cur.items.push(m);
         } else {
-            cur = { turnId: m.id, items: [m] };
+            cur = {turnId: m.id, items: [m]};
             groups.push(cur);
         }
     }
     return groups;
 }
 
-// import supabase inside this file lazily to avoid a circular import edge-case
-import { supabase } from "@/lib/supabaseClient";
-import {useUserStore} from "@/store/userStore";

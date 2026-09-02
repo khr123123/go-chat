@@ -5,6 +5,7 @@ export interface Profile {
     id: Uuid;
     avatar_url: string | null;
     bio: string | null;
+    display_name:string;
 }
 
 export interface Conversation {
@@ -21,6 +22,7 @@ export interface Conversation {
 export interface MemberRow {
     conversation_id: Uuid;
     user_id: Uuid;
+    display_name:string;
     role: "owner" | "admin" | "member";
     last_read_message_id: Uuid | null;
     last_read_at: string | null;

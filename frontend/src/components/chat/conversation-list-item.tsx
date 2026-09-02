@@ -22,11 +22,7 @@ export function ConversationListItem({
         : conv.members.find((m) => m.user_id !== CURRENT_USER_ID);
     const displayName = isGroup
         ? conv.title ?? "群聊"
-        : other?.profile?.bio
-            ? `User ${other.user_id.slice(0, 6)}`
-            : other
-                ? `User ${other.user_id.slice(0, 6)}`
-                : "未知用户";
+        : other?.profile?.display_name;
     const avatarUrl = isGroup ? conv.avatar_url : other?.profile?.avatar_url ?? null;
 
     const lastAt = conv.last_message_at ? new Date(conv.last_message_at) : null;
@@ -48,7 +44,7 @@ export function ConversationListItem({
                 ) : (
                     <Avatar>
                         <AvatarImage src={avatarUrl ?? undefined} alt={displayName}/>
-                        <AvatarFallback>{displayName.slice(0, 2)}</AvatarFallback>
+                        <AvatarFallback>{displayName}</AvatarFallback>
                     </Avatar>
                 )}
                 {conv.unread_count > 0 && (

@@ -17,7 +17,7 @@ export function LoginForm({className, ...props}: React.ComponentProps<"form">) {
     const [confirmPassword, setConfirmPassword] = useState("")
     const [loading, setLoading] = useState(false)
     const setUser = useUserStore((state) => state.setUser)
-    const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
+    const handleLogin = async (e: React.SyntheticEvent<HTMLFormElement>) => {
         e.preventDefault()
         if (!email.trim() || !password.trim()) {
             toast.error("请输入邮箱和密码", {description: "Email 和 Password 都不能为空"})
@@ -48,7 +48,7 @@ export function LoginForm({className, ...props}: React.ComponentProps<"form">) {
                 updated_at: authUser.updated_at,
                 last_sign_in_at: authUser.last_sign_in_at,
                 email_confirmed_at: authUser.email_confirmed_at,
-                displayname: authUser.user_metadata.display_name,
+                displayname: profile.display_name,
                 avatar_url: profile?.avatar_url,
                 bio: profile?.bio,
             })
@@ -63,44 +63,62 @@ export function LoginForm({className, ...props}: React.ComponentProps<"form">) {
     }
 
     const handleRegister = async (e: React.FormEvent<HTMLFormElement>) => {
-        e.preventDefault()
+        e.preventDefault();
         if (!email.trim() || !password.trim()) {
-            toast.error("请输入邮箱和密码", {description: "Email 和 Password 都不能为空"})
-            return
+            toast.error("Registration failed", {description: "Email and password are required",});
+            return;
+        }
+
+        if (!nickname.trim()) {
+            toast.error("Registration failed", {description: "Please enter a nickname",});
+            return;
         }
         if (password !== confirmPassword) {
-            toast.error("注册失败", {description: "两次输入的密码不一致"})
-            return
+            toast.error("Registration failed", {description: "Passwords do not match",});
+            return;
         }
         if (password.length < 6) {
-            toast.error("注册失败", {description: "密码长度至少需要 6 位"})
-            return
+            toast.error("Registration failed", {description: "Password must be at least 6 characters",});
+            return;
         }
-        setLoading(true)
+        setLoading(true);
         try {
-            const {error} = await supabase.auth.signUp({
-                email: email.trim(),
-                password,
-                options: {
-                    data: {
-                        display_name: nickname.trim(),
-                    },
-                },
-            })
+            const {data, error} = await supabase.auth.signUp({email: email.trim(), password,});
             if (error) {
-                toast.error("注册失败", {description: error.message})
-                return
+                toast.error("Registration failed", {description: error.message,});
+                return;
             }
-            toast.success("注册成功", {description: "注册成功，请检查邮箱完成验证"})
-            setIsRegister(false)
-            setPassword("")
-            setConfirmPassword("")
-        } catch {
-            toast.error("注册失败", {description: "服务器发生错误，请稍后再试"})
+            const user = data.user;
+            if (!user) {
+                toast.error("Registration failed", {description: "Unable to create user",});
+                return;
+            }
+            // Update profile
+            const {error: profileError} = await supabase
+                .from("profiles")
+                .update({
+                    display_name: nickname.trim(),
+                })
+                .eq("id", user.id);
+            if (profileError) {
+                console.error("Profile update error:", profileError);
+                toast.error("Registration failed", {description: profileError.message,});
+                return;
+            }
+            toast.success("Registration successful", {description: "Please check your email to verify your account",});
+            setIsRegister(false);
+            setEmail("");
+            setPassword("");
+            setConfirmPassword("");
+            setNickname("");
+        } catch (error) {
+            toast.error("Registration failed", {
+                description: "A server error occurred. Please try again later.",
+            });
         } finally {
-            setLoading(false)
+            setLoading(false);
         }
-    }
+    };
 
     const switchMode = () => {
         setIsRegister(!isRegister)

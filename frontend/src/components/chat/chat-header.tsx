@@ -14,7 +14,7 @@ export function ChatHeader({ conv }: { conv: ConversationWithMeta }) {
     const name = isGroup
         ? conv.title
         : other
-            ? `User ${other.user_id.slice(0, 6)}`
+            ? other?.profile?.display_name
             : "未知用户";
     const avatarUrl = isGroup ? conv.avatar_url : other?.profile?.avatar_url ?? null;
 

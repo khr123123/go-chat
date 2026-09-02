@@ -3,13 +3,7 @@ import {toast} from "sonner"
 import {supabase} from "@/lib/supabaseClient"
 import {useUserStore} from "@/store/userStore"
 
-import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogHeader,
-    DialogTitle,
-} from "@/components/ui/dialog"
+import {Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle,} from "@/components/ui/dialog"
 import {Button} from "@/components/ui/button"
 import {Input} from "@/components/ui/input"
 import {Textarea} from "@/components/ui/textarea"
@@ -22,10 +16,10 @@ type Props = {
 }
 
 function InfoItem({
-    label,
-    value,
-    mono = false,
-}: {
+                      label,
+                      value,
+                      mono = false,
+                  }: {
     label: string
     value?: string
     mono?: boolean
@@ -91,26 +85,13 @@ export default function EditProfileDialog({open, onOpenChange}: Props) {
             const {error: profileError} = await supabase
                 .from("profiles")
                 .update({
+                    display_name: displayName.trim(),
                     bio: bio.trim(),
                     updated_at: new Date().toISOString(),
                 })
                 .eq("id", user.id)
-
             if (profileError) throw profileError
-
-            const {error: authError} = await supabase.auth.updateUser({
-                data: {
-                    display_name: displayName.trim(),
-                },
-            })
-
-            if (authError) throw authError
-
-            updateUser({
-                displayname: displayName.trim(),
-                bio: bio.trim(),
-            })
-
+            updateUser({displayname: displayName.trim(), bio: bio.trim(),})
             toast.success("Profile updated")
             onOpenChange(false)
         } catch (error) {
