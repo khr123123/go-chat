@@ -64,4 +64,6 @@ export const useChatStore = create<ChatState>((set) => ({
         set((s) => ({ pending: s.pending.filter((it) => it.localId !== id) })),
     setTyping: (convId, userIds) =>
         set((s) => ({ typingByConv: { ...s.typingByConv, [convId]: userIds } })),
+
+
 }));

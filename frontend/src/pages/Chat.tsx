@@ -137,10 +137,7 @@ export default function Chat() {
 
         for (const member of selected.members) {
             map[member.user_id] = {
-                name: SEED_USER_IDS.has(member.user_id)
-                    ? `User ${member.user_id.slice(0, 6)}`
-                    : member.profile?.bio ??
-                    `User ${member.user_id.slice(0, 6)}`,
+                name: member.profile?.display_name!,
                 avatar: member.profile?.avatar_url ?? null,
             };
         }
@@ -156,7 +153,7 @@ export default function Chat() {
 
                 {/* 中间自己的滚动区域 */}
                 <div className="min-h-0 flex-1 overflow-y-auto">
-                    <ChatSidebar />
+                    <ChatSidebar/>
                 </div>
 
             </aside>
@@ -168,7 +165,7 @@ export default function Chat() {
                     <>
                         {/* 不滚 */}
                         <div className="shrink-0">
-                            <ChatHeader conv={selected} />
+                            <ChatHeader conv={selected}/>
                         </div>
 
                         {/* 只有这里滚 */}
@@ -190,7 +187,7 @@ export default function Chat() {
                         </div>
                     </>
                 ) : (
-                    <ChatEmptyState />
+                    <ChatEmptyState/>
                 )}
 
             </main>

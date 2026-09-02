@@ -48,22 +48,52 @@ export function MessageComposer({convId, onSent}: Props) {
     };
 
     const sendText = async (convId: string, body: string) => {
+        const {
+            data: {user: authUser},
+            error: authError,
+        } = await supabase.auth.getUser();
+
+        if (authError || !authUser) {
+            toast.error("用户未登录");
+            console.error("auth error:", authError);
+            return;
+        }
+
+        console.log("========== SEND MESSAGE ==========");
+        console.log("auth user:", authUser.id);
+        console.log("store user:", CURRENT_USER_ID);
+        console.log("conversation:", convId);
+        console.log("body:", body);
+
         const {data, error} = await supabase
             .from("messages")
             .insert({
                 conversation_id: convId,
-                sender_id: CURRENT_USER_ID,
+                sender_id: authUser.id,
                 kind: "text",
                 body,
             })
-            .select()
-            .single();
+            .select("*")
+            .maybeSingle();
+
         if (error) {
-            toast.error("发送失败: " + error.message);
+            console.error("MESSAGE INSERT ERROR");
+            console.error("code:", error.code);
+            console.error("message:", error.message);
+            console.error("details:", error.details);
+            console.error("hint:", error.hint);
+
+            toast.error(`发送失败: ${error.message}`);
             return;
         }
+
+        console.log("MESSAGE INSERT SUCCESS:", data);
+
         if (data) {
-            onSent({...(data as ChatMessage), attachments: []});
+            onSent({
+                ...(data as ChatMessage),
+                attachments: [],
+            });
         }
     };
 
